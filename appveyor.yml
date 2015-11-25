@@ -1,0 +1,40 @@
+version: '{build}'
+skip_tags: true
+clone_depth: 10
+
+cache:
+  - c:\m2_repo
+  - C:\flex-sdk-4.14.1
+  - C:\flex-sdk-4.12.1
+
+environment:
+  matrix:
+    - JAVA_HOME: C:\Program Files\Java\jdk1.7.0
+
+os: Windows Server 2012
+
+install:
+  - ps: Start-FileDownload 'https://fpdownload.macromedia.com/pub/flashplayer/updaters/19/flashplayer_19_sa_debug.exe' -FileName c:\flashplayer.exe
+  - ps: Start-FileDownload 'http://repo1.maven.org/maven2/com/marvinformatics/flex/apache-flex-sdk-converter/151126/apache-flex-sdk-converter-151126.jar' -FileName C:\apache-flex-sdk-converter.jar
+  - ps: |
+      Add-Type -AssemblyName System.IO.Compression.FileSystem
+      if (!(Test-Path -Path "C:\maven" )) {
+        (new-object System.Net.WebClient).DownloadFile('http://www.us.apache.org/dist/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.zip', 'C:\maven-bin.zip')
+        [System.IO.Compression.ZipFile]::ExtractToDirectory("C:\maven-bin.zip", "C:\maven")
+      }
+  - cmd: SET PATH=C:\maven\apache-maven-3.2.5\bin;%JAVA_HOME%\bin;%PATH%
+  - cmd: SET MAVEN_OPTS=-XX:MaxPermSize=2g -Xmx4g
+  - cmd: SET JAVA_OPTS=-XX:MaxPermSize=2g -Xmx4g
+  - cmd: mvn --version
+  - cmd: java -version
+  - ps: |
+      Start-FileDownload 'https://github.com/velo/flex-utilities/raw/id_helper/IdHelper.class' -FileName IdHelper.class
+      $id = java IdHelper
+      if (!(Test-Path -Path "C:\flex-sdk-4.12.1" )) {
+        java "-Dcom.adobe.systemIdsForWhichTheTermsOfTheAdobeLicenseAgreementAreAccepted=$id" -jar C:\apache-flex-sdk-converter.jar -flexVersion 4.12.1 -flashVersions 16.0 -airVersion 16.0 -platforms WINDOWS -fontkit -fdkDir C:\flex-sdk-4.12.1 -mavenDir c:\m2_repo download convert > silence.txt
+      }
+  - cmd: SET PATH=C:\flex-sdk-4.12.1\bin;c:\;%PATH%
+  - cmd: mxmlc --version
+
+build_script:
+  - mvn clean install -B  -Dmaven.repo.local=c:\m2_repo
