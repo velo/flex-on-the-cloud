@@ -25,6 +25,9 @@ install:
   - ps: |
       Start-FileDownload 'https://github.com/velo/flex-utilities/raw/id_helper/IdHelper.class' -FileName IdHelper.class
       $id = java IdHelper
+      if (!(Test-Path -Path "C:\flex-sdk-4.12.1" )) {
+        java "-Dcom.adobe.systemIdsForWhichTheTermsOfTheAdobeLicenseAgreementAreAccepted=$id" -jar C:\apache-flex-sdk-converter.jar -flexVersion 4.12.1 -flashVersions 16.0 -airVersion 16.0 -platforms WINDOWS -fontkit -fdkDir C:\flex-sdk-4.12.1 -mavenDir c:\m2_repo download convert > silence.txt
+      }
       if (!(Test-Path -Path "C:\flex-sdk-4.14.1" )) {
         java "-Dcom.adobe.systemIdsForWhichTheTermsOfTheAdobeLicenseAgreementAreAccepted=$id" -jar C:\apache-flex-sdk-converter.jar -flexVersion 4.12.1 -flashVersions 16.0 -airVersion 16.0 -platforms WINDOWS -fontkit -fdkDir C:\flex-sdk-4.12.1 -mavenDir c:\m2_repo download convert > silence.txt
       }
