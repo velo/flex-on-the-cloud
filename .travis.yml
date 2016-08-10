@@ -1,0 +1,17 @@
+os:
+  - osx
+
+install:
+  - mkdir -p ~/flex-sdk-4.12.1
+  - mkdir -p ~/m2_repo
+  - export JAVA_HOME=$(/usr/libexec/java_home)
+  - brew tap Caskroom/cask
+  - brew cask install flash-player-debugger
+  - ln -s /Applications/Flash\ Player\ Debugger.app/Contents/MacOS/Flash\ Player\ Debugger flashplayer
+  - find /Applications/Flash\ Player\ Debugger.app -name '*'
+  - wget 'http://repo1.maven.org/maven2/com/marvinformatics/flex/apache-flex-sdk-converter/151126/apache-flex-sdk-converter-151126.jar' -O apache-flex-sdk-converter.jar
+  - wget 'https://github.com/velo/flex-utilities/raw/id_helper/IdHelper.class' -O IdHelper.class
+  - java -Dcom.adobe.systemIdsForWhichTheTermsOfTheAdobeLicenseAgreementAreAccepted=`java IdHelper` -jar apache-flex-sdk-converter.jar -flexVersion 4.12.1 -flashVersions 16.0 -airVersion 16.0 -platforms MAC -fontkit -fdkDir ~/flex-sdk-4.12.1 -mavenDir ~/.m2/repository download convert | grep -v '\['
+
+script:
+  - mvn clean install -B -Dflex.flashPlayer.command=/Applications/Flash\ Player\ Debugger.app/Contents/MacOS/Flash\ Player\ Debugger
